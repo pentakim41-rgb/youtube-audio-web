@@ -456,7 +456,8 @@ class WebApp:
             self.updating = False
             if ok:
                 self.update_info = {}
-                self.notify("yt-dlp 업데이트 완료 - 서버(run_web.bat)를 다시 시작하면 적용됩니다.")
+                how = "Termux 에서 yta restart" if IS_ANDROID else "run.bat 창을 닫고 다시 실행"
+                self.notify(f"yt-dlp 업데이트 완료 - 서버를 다시 시작하면 적용됩니다 ({how}).")
             else:
                 self.notify(f"업데이트 실패: {out[-200:]}", "error")
 

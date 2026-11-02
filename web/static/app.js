@@ -12,6 +12,7 @@ const ui = {
   selected: new Set(),
   local: false,
   android: false, // 휴대폰 자체가 서버 → 파일이 이미 휴대폰에 있으므로 '받기'가 필요 없다
+  phoneLoggedIn: false, // 휴대폰판 아이디/비번 로그인. 저장하지 않으므로 화면을 열 때마다 다시 묻는다
   pollTimer: null,
   rows: new Map(), // uid → <li>
 };
@@ -54,6 +55,7 @@ function toast(text, level) {
 function showLogin() {
   clearTimeout(ui.pollTimer);
   $("#app").hidden = true;
+  $("#phone-login").hidden = true;
   $("#login").hidden = false;
   setTimeout(() => $("#pin").focus(), 50);
 }
@@ -69,12 +71,41 @@ $("#login-form").addEventListener("submit", async (e) => {
   }
 });
 
+// 휴대폰판: 'yta' 로 화면을 열면 아이디/비번 로그인부터 (화면에 안내된 값이라 보안용은 아니다)
+const PHONE_ID = "1";
+const PHONE_PW = "1";
+
+function showPhoneLogin() {
+  clearTimeout(ui.pollTimer);
+  $("#app").hidden = true;
+  $("#login").hidden = true;
+  $("#phone-login").hidden = false;
+  setTimeout(() => $("#phone-id").focus(), 50);
+}
+
+$("#phone-login-form").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const ok = $("#phone-id").value.trim() === PHONE_ID && $("#phone-pw").value === PHONE_PW;
+  if (!ok) {
+    $("#phone-login-error").textContent = "아이디 또는 비밀번호가 맞지 않습니다.";
+    $("#phone-pw").value = "";
+    $("#phone-pw").focus();
+    return;
+  }
+  $("#phone-login-error").textContent = "";
+  $("#phone-pw").value = "";
+  ui.phoneLoggedIn = true;
+  start();
+});
+
 async function start() {
   const me = await fetch("/api/me").then((r) => r.json()).catch(() => ({}));
   if (!me.authed) return showLogin();
   ui.local = !!me.local;
   ui.android = !!me.android;
+  if (ui.android && !ui.phoneLoggedIn) return showPhoneLogin();
   $("#login").hidden = true;
+  $("#phone-login").hidden = true;
   $("#app").hidden = false;
   document.querySelectorAll(".pc-only").forEach((el) => (el.hidden = !ui.local || ui.android));
   if (ui.local && !ui.android) loadAccess();
@@ -147,7 +178,8 @@ async function poll(now) {
   const busy = ui.state && (ui.state.counts.active || ui.state.pending);
   ui.pollTimer = setTimeout(poll, document.hidden ? 5000 : busy ? 800 : 2500);
 }
-document.addEventListener("visibilitychange", () => { if (!document.hidden) poll(true); });
+// 로그인 화면에 있을 때는 목록을 받지 않는다 (알림 토스트가 로그인 화면 위로 뜨지 않도록)
+document.addEventListener("visibilitychange", () => { if (!document.hidden && !$("#app").hidden) poll(true); });
 
 // ---------------------------------------------------------------- 화면 그리기
 function render() {

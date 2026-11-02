@@ -28,6 +28,21 @@
   </div>
 </section>
 
+<!-- 휴대폰(Termux)판: 화면을 열 때마다 먼저 보이는 로그인 -->
+<section id="phone-login" class="login" hidden>
+  <div class="login-box">
+    <img src="/static/icon.svg" alt="" width="56" height="56">
+    <h1>유튜브 음악 추출</h1>
+    <p class="login-hint">아이디 <b>1</b> · 비밀번호 <b>1</b></p>
+    <form id="phone-login-form" autocomplete="off">
+      <input id="phone-id" class="field" placeholder="아이디" autocapitalize="off" spellcheck="false" aria-label="아이디" required>
+      <input id="phone-pw" class="field" type="password" placeholder="비밀번호" aria-label="비밀번호" required>
+      <button class="btn primary big" type="submit">로그인</button>
+    </form>
+    <p id="phone-login-error" class="error" role="alert"></p>
+  </div>
+</section>
+
 <!-- 메인 -->
 <main id="app" hidden>
   <header class="topbar">
